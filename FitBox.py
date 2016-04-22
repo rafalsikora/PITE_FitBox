@@ -2,29 +2,48 @@ from DataGenerator import *
 from NoiseGenerator import *
 from Plotter import *
 import Fitter
+import StatAnalyser
 import numpy
 
-# definition of the signal function, here 3rd order polynomial used
-signalShape = lambda x: 3*x - x**3
-
 # definition of 3rd order polynomial with free parameters (required for fitting)
-polynomial3 = lambda x, a, b: a*numpy.array(x) + b*numpy.power(numpy.array(x), 3)
+polynomial3 = lambda x, a, b, c, d: a+b*numpy.array(x)+c*numpy.power(numpy.array(x), 2)+d*numpy.power(numpy.array(x), 3)
 
-# definition of the function fitted to measured data
-fitFunction = lambda x, a, b, c: a*numpy.sin(b*numpy.array(x)+c)
+# definition of the signal function (3rd order polynomial)
+signalShape = lambda x: polynomial3(x, 0, 3, 0, -1)
 
-# creating a random (gaussian) noise generator
-noiseGen = NoiseGenerator(0.5)
+# definition of the wrong model of measured data
+wrongSignalShape = lambda x, a, b, c: a*numpy.sin(b*numpy.array(x)+c)
 
-# creating a "data factory" following the signalShape with some noise
-dataGen = DataGenerator(signalShape, 10, (-2, 2), 100, noiseGen)
+# create plotting object
+plotter = Plotter("noiseEffectStudy")
 
-data = dataGen.generateData()
+# defining list of (absolute) noise levels -> noise RMSes
+noiseList = [0.01, 0.2, 0.4, 0.6, 0.8]
 
-fitOutput = Fitter.fit(data, polynomial3)
+# running "experiments" with different noise levels
+for noiseLevel in noiseList:
+    # creating a random (gaussian) noise generator
+    noiseGen = NoiseGenerator(noiseLevel)
 
-plotter = Plotter()
-plotter.addDataToPlot(data, fitOutput)
+    # creating a "data factory" following the signalShape with some noise given by noiseGen
+    dataGen = DataGenerator(signalShape, 10, (-2, 2), 100, noiseGen)
+
+    # generating data
+    data = dataGen.generateData()
+
+    # fitting an appropriate data model and evaluating output
+    fitOutput_A = Fitter.fit(data, polynomial3)
+    statAnalysisOutput_A = StatAnalyser.evaluate(fitOutput_A)
+
+    # fitting wrong data model and evaluating output
+    fitOutput_B = Fitter.fit(data, wrongSignalShape)
+    statAnalysisOutput_B = StatAnalyser.evaluate(fitOutput_B)
+
+    # adding both fitting outcomes to printing list
+    plotter.addDataToPlot(data, fitOutput_A, statAnalysisOutput_A, noiseLevel)
+    plotter.addDataToPlot(data, fitOutput_B, statAnalysisOutput_B, noiseLevel)
+
+# printing the data
 plotter.plot()
 
 

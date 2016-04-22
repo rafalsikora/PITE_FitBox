@@ -1,12 +1,12 @@
-# Class representing "data factory" following given distribution.
-# Contains feature of random noise simulation.
+# Class representing "data factory". Generates data-points
+# following given distribution. Contains feature of random noise simulation.
 
 from NoiseGenerator import *
-import numpy as np
+import numpy
 
 
 class DataGenerator:
-    def __init__(self, func=None, nPointsPerBin=1, xRange=[], nBins=1, noiseGen=None):
+    def __init__(self, func=None, nPointsPerBin=1, xRange=(), nBins=1, noiseGen=None):
         self.function = None
         self.nPointsPerBin = 0
         self.xRange = []
@@ -48,7 +48,7 @@ class DataGenerator:
 
     def generateData(self):
         binWidth = float(self.xRange[1]-self.xRange[0])/self.nBins
-        x = np.arange(binWidth/2+self.xRange[0], binWidth/2+self.xRange[1], binWidth)
+        x = numpy.arange(binWidth/2+self.xRange[0], binWidth/2+self.xRange[1], binWidth)
         data = []
         for xval in x:
             data.append([xval, [self.function(xval) + self.noiseGenerator() for i in xrange(self.nPointsPerBin)]])

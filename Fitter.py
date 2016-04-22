@@ -1,4 +1,5 @@
-# Fitter module
+# Fitter module - contains fitting method which makes use
+# of scipy.optimize module
 
 import scipy.optimize
 import numpy
@@ -12,5 +13,5 @@ def fit(dataset, function):
         std = numpy.std(points[1])
         y.append(average)
         errors.append(std/average)
-    popt, pcov = scipy.optimize.curve_fit(function, x, y)
-    return [function, popt]
+    popt, pcov = scipy.optimize.curve_fit(function, x, y, None, errors)
+    return [function, popt, (x, y, errors)]
